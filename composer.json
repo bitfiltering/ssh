@@ -1,0 +1,40 @@
+{
+    "name": "fastbolt/ssh",
+    "type": "library",
+    "description": "SSH Tunnel Library",
+    "keywords": [
+        "ssh"
+    ],
+    "homepage": "https://www.fastbolt.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Daniel Hirtzbruch",
+            "email": "dhh@fastbolt.com"
+        }
+    ],
+    "require": {
+        "php": "^7.0",
+        "symfony/process": "^3.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~5.7",
+        "jakub-onderka/php-parallel-lint": "0.9"
+    },
+    "conflict": {
+    },
+    "autoload": {
+        "psr-4": {
+            "psr-4": {"Fastbolt\\SSH\\": "src/Fastbolt/SSH"}
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {"Fastbolt\\SSH\\": "tests/Fastbolt/SSH"}
+    },
+    "scripts": {
+        "test": [
+            "parallel-lint . --exclude vendor",
+            "phpunit"
+        ]
+    }
+}
