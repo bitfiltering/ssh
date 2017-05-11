@@ -39,14 +39,14 @@ class SSH
 
         $sshCommand = sprintf(
             'ssh -p %s %s@%s -M -L %s:%s:%s -i %s -fN -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no -S %s',
-            $config->sshPort,
-            $config->sshUsername,
-            $config->sshHostname,
-            $config->forwardPortLocal,
-            $config->forwardHostRemote,
-            $config->forwardPortRemote,
-            $config->privateKeyFilename,
-            $config->sshSocketPath
+            $config->getSshPort(),
+            $config->getSshUsername(),
+            $config->getSshHostname(),
+            $config->getForwardPortLocal(),
+            $config->getForwardHostRemote(),
+            $config->getForwardPortRemote(),
+            $config->getPrivateKeyFilename(),
+            $config->getSshSocketPath()
         );
 
         $this->process = new Process($sshCommand);
@@ -58,11 +58,13 @@ class SSH
         }
 
         if ($this->process->getExitCode() !== 0) {
-            throw new SSHException(sprintf(
-                'Error creating ssh tunnel. %s %s',
-                $this->process->getOutput(),
-                $this->process->getErrorOutput()
-            ));
+            throw new SSHException(
+                sprintf(
+                    'Error creating ssh tunnel. %s %s',
+                    $this->process->getOutput(),
+                    $this->process->getErrorOutput()
+                )
+            );
         }
 
         return $this;
@@ -80,8 +82,8 @@ class SSH
         $this->process->setCommandLine(
             sprintf(
                 'ssh -S %s -O exit %s',
-                $this->config->sshSocketPath,
-                $this->config->sshHostname
+                $this->config->getSshSocketPath(),
+                $this->config->getSshHostname()
             )
         )
                       ->start();
@@ -91,11 +93,13 @@ class SSH
         }
 
         if ($this->process->getExitCode() !== 0) {
-            throw new SSHException(sprintf(
-                'Unable to close ssh tunnel. %s %s',
-                $this->process->getOutput(),
-                $this->process->getErrorOutput()
-            ));
+            throw new SSHException(
+                sprintf(
+                    'Unable to close ssh tunnel. %s %s',
+                    $this->process->getOutput(),
+                    $this->process->getErrorOutput()
+                )
+            );
         }
 
         $this->process = null;
@@ -133,13 +137,15 @@ class SSH
      */
     private function prepareConfiguration(Config $config)
     {
-        if (!$config->sshSocketPath) {
-            $config->sshSocketPath = sprintf(
-                '%s/ssh-%s@%s:%s',
-                sys_get_temp_dir(),
-                $config->sshUsername,
-                $config->sshHostname,
-                $config->sshPort
+        if (!$config->getSshSocketPath()) {
+            $config->setSshSocketPath(
+                sprintf(
+                    '%s/ssh-%s@%s:%s',
+                    sys_get_temp_dir(),
+                    $config->getSshUsername(),
+                    $config->getSshHostname(),
+                    $config->getSshPort()
+                )
             );
         }
 
@@ -150,37 +156,38 @@ class SSH
             'sshPort',
             'forwardPortLocal',
             'forwardPortRemote',
-            'forwardHostRemote'
+            'forwardHostRemote',
         ];
         foreach ($mandatoryParameters as $parameter) {
-            if (!$config->$parameter) {
+            $getter = 'get'.ucfirst($parameter);
+            if (!$config->$getter()) {
                 throw new SSHException(sprintf('Missing configuration "%s".', $parameter));
             }
         }
 
-        if (!$config->privateKeyContents && !$config->privateKeyFilename) {
+        if (!$config->getPrivateKeyContents() && !$config->getPrivateKeyFilename()) {
             throw new SSHException(
                 'Missing configuration: One of "privateKeyContents" and "privateKeyFilename" is mandatory.'
             );
         }
 
-        if ($config->privateKeyContents && $config->privateKeyFilename) {
+        if ($config->getPrivateKeyContents() && $config->getPrivateKeyFilename()) {
             throw new SSHException(
                 'Only one of "privateKeyContents" and "privateKeyFilename" may be set.'
             );
         }
 
-        if ($config->privateKeyFilename && !file_exists($config->privateKeyFilename)) {
+        if ($config->getPrivateKeyFilename() && !file_exists($config->getPrivateKeyFilename())) {
             throw new SSHException(
                 sprintf(
                     'Key file "%s" could not be found',
-                    $config->privateKeyFilename
+                    $config->getPrivateKeyFilename()
                 )
             );
         }
 
-        if ($config->privateKeyContents) {
-            $config->privateKeyFilename = $this->writeKeyToFile($config->privateKeyContents);
+        if ($config->getPrivateKeyContents()) {
+            $config->getPrivateKeyFilename = $this->writeKeyToFile($config->getPrivateKeyContents());
         }
 
         return $config;
