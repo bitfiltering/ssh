@@ -24,9 +24,7 @@
     "conflict": {
     },
     "autoload": {
-        "psr-4": {
-            "psr-4": {"Fastbolt\\SSH\\": "src/Fastbolt/SSH"}
-        }
+        "psr-4": {"Fastbolt\\SSH\\": "src/Fastbolt/SSH"}
     },
     "autoload-dev": {
         "psr-4": {"Fastbolt\\SSH\\": "tests/Fastbolt/SSH"}
